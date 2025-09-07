@@ -1,0 +1,201 @@
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { FileText, Download, Eye, Calendar, Filter } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const RedactionHistory = () => {
+  const [historyData, setHistoryData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+  const res = await fetch('http://localhost:8000/history');
+        if (!res.ok) throw new Error('Failed to fetch history');
+        const data = await res.json();
+        setHistoryData(data.reverse());
+      } catch (err: any) {
+        setError(err.message || 'Error fetching history');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHistory();
+  }, []);
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <Badge className="bg-success text-success-foreground">Completed</Badge>;
+      case 'processing':
+        return <Badge variant="secondary">Processing</Badge>;
+      case 'failed':
+        return <Badge variant="destructive">Failed</Badge>;
+      default:
+        return <Badge variant="outline">Unknown</Badge>;
+    }
+  };
+
+  const getRedactionLevelColor = (level: string) => {
+    switch (level) {
+      case 'Full PII':
+        return 'text-destructive';
+      case 'Partial PII':
+        return 'text-warning';
+      case 'Custom':
+        return 'text-primary';
+      default:
+        return 'text-muted-foreground';
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-foreground">Redaction History</h1>
+        <p className="text-muted-foreground">View and manage all your document redaction activities</p>
+      </div>
+
+      {/* Filters and Search */}
+      <Card className="border-border shadow-soft">
+        <CardContent className="p-6">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by filename..."
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <Select>
+              <SelectTrigger className="w-full lg:w-48">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="processing">Processing</SelectItem>
+                <SelectItem value="failed">Failed</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select>
+              <SelectTrigger className="w-full lg:w-48">
+                <SelectValue placeholder="Redaction Level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Levels</SelectItem>
+                <SelectItem value="full-pii">Full PII</SelectItem>
+                <SelectItem value="partial-pii">Partial PII</SelectItem>
+                <SelectItem value="custom">Custom</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline">
+              <Filter className="h-4 w-4 mr-2" />
+              Filter
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* History Table */}
+      <Card className="border-border shadow-soft">
+        <CardHeader>
+          <CardTitle>Processing History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {loading ? (
+              <div>Loading...</div>
+            ) : error ? (
+              <div className="text-destructive">{error}</div>
+            ) : historyData.length === 0 ? (
+              <div>No redacted files found.</div>
+            ) : (
+              historyData.map((item) => (
+                <div key={item.id} className="border border-border rounded-lg p-4 hover:bg-muted/20 transition-colors">
+                  <div className="grid grid-cols-1 lg:grid-cols-6 gap-4 items-center">
+                    {/* File Info */}
+                    <div className="lg:col-span-2 space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium text-foreground">{item.file}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground">ID: {item.id}</div>
+                    </div>
+                    {/* Redaction Details (not available) */}
+                    <div className="space-y-1">
+                      <div className="text-sm font-medium text-muted-foreground">-</div>
+                      <div className="text-xs text-muted-foreground">-</div>
+                    </div>
+                    {/* Date & Time */}
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-sm text-foreground">{item.timestamp ? item.timestamp.split('T')[0] : '-'}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground">{item.timestamp ? item.timestamp.split('T')[1]?.split('.')[0] : '-'}</div>
+                    </div>
+                    {/* Status (always completed) */}
+                    <div className="flex justify-center lg:justify-start">
+                      <Badge className="bg-success text-success-foreground">Completed</Badge>
+                    </div>
+                    {/* Actions */}
+                    <div className="flex space-x-2">
+                      <a href={`http://localhost:8000/download/${item.id}`} target="_blank" rel="noopener noreferrer">
+                        <Button size="sm" variant="outline">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </a>
+                      <a href={`http://localhost:8000/download/${item.id}`} download>
+                        <Button size="sm" variant="outline">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="border-border shadow-soft">
+          <CardContent className="p-6 text-center">
+            <div className="text-2xl font-bold text-primary">247</div>
+            <div className="text-sm text-muted-foreground">Total Processed</div>
+          </CardContent>
+        </Card>
+        <Card className="border-border shadow-soft">
+          <CardContent className="p-6 text-center">
+            <div className="text-2xl font-bold text-success">243</div>
+            <div className="text-sm text-muted-foreground">Successful</div>
+          </CardContent>
+        </Card>
+        <Card className="border-border shadow-soft">
+          <CardContent className="p-6 text-center">
+            <div className="text-2xl font-bold text-destructive">4</div>
+            <div className="text-sm text-muted-foreground">Failed</div>
+          </CardContent>
+        </Card>
+        <Card className="border-border shadow-soft">
+          <CardContent className="p-6 text-center">
+            <div className="text-2xl font-bold text-foreground">2.1s</div>
+            <div className="text-sm text-muted-foreground">Avg. Processing</div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default RedactionHistory;
