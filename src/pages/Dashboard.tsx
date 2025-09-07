@@ -12,7 +12,8 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch('http://localhost:8000/history');
+  const apiUrl = import.meta.env.VITE_API_URL;
+  const res = await fetch(`${apiUrl}/history`);
         if (!res.ok) throw new Error('Failed to fetch history');
         const data = await res.json();
         setHistory(data.reverse().slice(0, 5)); // show latest 5
@@ -93,7 +94,7 @@ const Dashboard = () => {
                       <p className="text-xs text-muted-foreground">Redacted • {item.timestamp ? item.timestamp.replace('T', ' ').split('.')[0] : '-'}</p>
                     </div>
                   </div>
-                  <a href={`http://localhost:8000/download/${item.id}`} target="_blank" rel="noopener noreferrer">
+                  <a href={`${import.meta.env.VITE_API_URL}/download/${item.id}`} target="_blank" rel="noopener noreferrer">
                     <Badge variant="default">View</Badge>
                   </a>
                 </div>

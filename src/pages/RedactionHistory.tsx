@@ -14,7 +14,8 @@ const RedactionHistory = () => {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-  const res = await fetch('http://localhost:8000/history');
+  const apiUrl = import.meta.env.VITE_API_URL;
+  const res = await fetch(`${apiUrl}/history`);
         if (!res.ok) throw new Error('Failed to fetch history');
         const data = await res.json();
         setHistoryData(data.reverse());
@@ -148,12 +149,12 @@ const RedactionHistory = () => {
                     </div>
                     {/* Actions */}
                     <div className="flex space-x-2">
-                      <a href={`http://localhost:8000/download/${item.id}`} target="_blank" rel="noopener noreferrer">
+                      <a href={`${import.meta.env.VITE_API_URL}/download/${item.id}`} target="_blank" rel="noopener noreferrer">
                         <Button size="sm" variant="outline">
                           <Eye className="h-4 w-4" />
                         </Button>
                       </a>
-                      <a href={`http://localhost:8000/download/${item.id}`} download>
+                      <a href={`${import.meta.env.VITE_API_URL}/download/${item.id}`} download>
                         <Button size="sm" variant="outline">
                           <Download className="h-4 w-4" />
                         </Button>

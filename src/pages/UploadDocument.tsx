@@ -62,7 +62,8 @@ const UploadDocument = () => {
   }, 500);
 
   try {
-    const response = await fetch('http://localhost:8000/redact', {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  const response = await fetch(`${apiUrl}/redact`, {
       method: 'POST',
       body: formData,
     });
