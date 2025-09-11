@@ -10,12 +10,14 @@ const RedactionHistory = () => {
   const [historyData, setHistoryData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-  const apiUrl = import.meta.env.VITE_API_URL;
-  const res = await fetch(`${apiUrl}/history`);
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const res = await fetch(`${apiUrl}/history`);
         if (!res.ok) throw new Error('Failed to fetch history');
         const data = await res.json();
         setHistoryData(data.reverse());
@@ -54,15 +56,18 @@ const RedactionHistory = () => {
     }
   };
 
+  const filteredData = historyData.filter((item) => {
+    const matchesSearch = item.file.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">Redaction History</h1>
         <p className="text-muted-foreground">View and manage all your document redaction activities</p>
       </div>
-
-      {/* Filters and Search */}
       <Card className="border-border shadow-soft">
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -72,10 +77,12 @@ const RedactionHistory = () => {
                 <Input
                   placeholder="Search by filename..."
                   className="pl-10"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
             </div>
-            <Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full lg:w-48">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -86,29 +93,15 @@ const RedactionHistory = () => {
                 <SelectItem value="failed">Failed</SelectItem>
               </SelectContent>
             </Select>
-            <Select>
-              <SelectTrigger className="w-full lg:w-48">
-                <SelectValue placeholder="Redaction Level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Levels</SelectItem>
-                <SelectItem value="full-pii">Full PII</SelectItem>
-                <SelectItem value="partial-pii">Partial PII</SelectItem>
-                <SelectItem value="custom">Custom</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline">
-              <Filter className="h-4 w-4 mr-2" />
-              Filter
-            </Button>
           </div>
         </CardContent>
       </Card>
-
-      {/* History Table */}
       <Card className="border-border shadow-soft">
         <CardHeader>
-          <CardTitle>Processing History</CardTitle>
+          <CardTitle className="flex items-center space-x-2">
+            <FileText className="h-5 w-5" />
+            <span>History</span>
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -116,50 +109,43 @@ const RedactionHistory = () => {
               <div>Loading...</div>
             ) : error ? (
               <div className="text-destructive">{error}</div>
-            ) : historyData.length === 0 ? (
-              <div>No redacted files found.</div>
+            ) : filteredData.length === 0 ? (
+              <div>No history found.</div>
             ) : (
-              historyData.map((item) => (
-                <div key={item.id} className="border border-border rounded-lg p-4 hover:bg-muted/20 transition-colors">
-                  <div className="grid grid-cols-1 lg:grid-cols-6 gap-4 items-center">
-                    {/* File Info */}
-                    <div className="lg:col-span-2 space-y-1">
-                      <div className="flex items-center space-x-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium text-foreground">{item.file}</span>
-                      </div>
-                      <div className="text-xs text-muted-foreground">ID: {item.id}</div>
+              filteredData.map((item) => (
+                <div key={item.id} className="grid grid-cols-1 lg:grid-cols-5 gap-4 p-3 bg-muted/50 rounded-lg items-center">
+                  <div className="space-y-1">
+                    <div className="flex items-center space-x-2">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium text-foreground">{item.file}</span>
                     </div>
-                    {/* Redaction Details (not available) */}
-                    <div className="space-y-1">
-                      <div className="text-sm font-medium text-muted-foreground">-</div>
-                      <div className="text-xs text-muted-foreground">-</div>
+                    <div className="text-xs text-muted-foreground">ID: {item.id}</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-sm font-medium text-muted-foreground">-</div>
+                    <div className="text-xs text-muted-foreground">-</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center space-x-1">
+                      <Calendar className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-sm text-foreground">{item.timestamp ? item.timestamp.split('T')[0] : '-'}</span>
                     </div>
-                    {/* Date & Time */}
-                    <div className="space-y-1">
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-sm text-foreground">{item.timestamp ? item.timestamp.split('T')[0] : '-'}</span>
-                      </div>
-                      <div className="text-xs text-muted-foreground">{item.timestamp ? item.timestamp.split('T')[1]?.split('.')[0] : '-'}</div>
-                    </div>
-                    {/* Status (always completed) */}
-                    <div className="flex justify-center lg:justify-start">
-                      <Badge className="bg-success text-success-foreground">Completed</Badge>
-                    </div>
-                    {/* Actions */}
-                    <div className="flex space-x-2">
-                      <a href={`${import.meta.env.VITE_API_URL}/download/${item.id}`} target="_blank" rel="noopener noreferrer">
-                        <Button size="sm" variant="outline">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </a>
-                      <a href={`${import.meta.env.VITE_API_URL}/download/${item.id}`} download>
-                        <Button size="sm" variant="outline">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </a>
-                    </div>
+                    <div className="text-xs text-muted-foreground">{item.timestamp ? item.timestamp.split('T')[1]?.split('.')[0] : '-'}</div>
+                  </div>
+                  <div className="flex justify-center lg:justify-start">
+                    {getStatusBadge('completed')}
+                  </div>
+                  <div className="flex space-x-2">
+                    <a href={`${import.meta.env.VITE_API_URL}/preview/${item.id}?type=redacted`} target="_blank" rel="noopener noreferrer">
+                      <Button size="sm" variant="outline">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </a>
+                    <a href={`${import.meta.env.VITE_API_URL}/download/${item.id}`} target="_blank" rel="noopener noreferrer">
+                      <Button size="sm" variant="outline">
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </a>
                   </div>
                 </div>
               ))
@@ -167,30 +153,28 @@ const RedactionHistory = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="border-border shadow-soft">
           <CardContent className="p-6 text-center">
-            <div className="text-2xl font-bold text-primary">247</div>
+            <div className="text-2xl font-bold text-primary">{filteredData.length}</div>
             <div className="text-sm text-muted-foreground">Total Processed</div>
           </CardContent>
         </Card>
         <Card className="border-border shadow-soft">
           <CardContent className="p-6 text-center">
-            <div className="text-2xl font-bold text-success">243</div>
+            <div className="text-2xl font-bold text-success">{filteredData.filter(item => item.status === 'completed').length}</div>
             <div className="text-sm text-muted-foreground">Successful</div>
           </CardContent>
         </Card>
         <Card className="border-border shadow-soft">
           <CardContent className="p-6 text-center">
-            <div className="text-2xl font-bold text-destructive">4</div>
+            <div className="text-2xl font-bold text-destructive">{filteredData.filter(item => item.status === 'failed').length}</div>
             <div className="text-sm text-muted-foreground">Failed</div>
           </CardContent>
         </Card>
         <Card className="border-border shadow-soft">
           <CardContent className="p-6 text-center">
-            <div className="text-2xl font-bold text-foreground">2.1s</div>
+            <div className="text-2xl font-bold text-foreground">{filteredData.length > 0 ? (filteredData.reduce((sum, h) => sum + (h.processing_time || 0), 0) / filteredData.length).toFixed(2) : '0.00'}s</div>
             <div className="text-sm text-muted-foreground">Avg. Processing</div>
           </CardContent>
         </Card>
