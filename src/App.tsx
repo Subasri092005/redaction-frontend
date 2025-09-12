@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import UploadDocument from "./pages/UploadDocument";
 import RedactionHistory from "./pages/RedactionHistory";
-import Settings from "./pages/Settings";
+
 import NotFound from "./pages/NotFound";
 import DashboardLayout from "./components/layout/DashboardLayout";
 
@@ -22,7 +22,7 @@ const App = () => (
           <Route path="/" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
           <Route path="/upload" element={<DashboardLayout><UploadDocument /></DashboardLayout>} />
           <Route path="/history" element={<DashboardLayout><RedactionHistory /></DashboardLayout>} />
-          <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

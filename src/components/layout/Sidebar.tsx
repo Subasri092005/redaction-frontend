@@ -24,8 +24,8 @@ const Sidebar = () => {
             <Shield className="h-6 w-6 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="font-bold text-sidebar-foreground text-lg">Apollo Health</h1>
-            <p className="text-sm text-muted-foreground">AI Redaction Portal</p>
+            <h1 className="font-bold text-sidebar-foreground text-lg">RedactIQ</h1>
+            <p className="text-sm text-muted-foreground">Redaction Portal</p>
           </div>
         </div>
       </div>

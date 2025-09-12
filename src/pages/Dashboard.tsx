@@ -34,7 +34,7 @@ const Dashboard = () => {
     <div className="space-y-6">
       <div className="flex flex-col gap-1">
         <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back, Dr. Johnson. Here's your redaction overview.</p>
+        <p className="text-sm text-muted-foreground">Overview of your document redaction activities</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="border-border shadow-soft">
