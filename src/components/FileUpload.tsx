@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, File, X } from 'lucide-react';
+import { Upload, File, X, FilePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -26,6 +26,17 @@ const FileUpload: React.FC<FileUploadProps> = ({
     }
     setIsDragActive(false);
   }, [onFileSelect]);
+
+  const loadSampleDocument = async () => {
+    try {
+      const response = await fetch('/sample.pdf');
+      const blob = await response.blob();
+      const file = new File([blob], 'sample.pdf', { type: 'application/pdf' });
+      onFileSelect(file);
+    } catch (error) {
+      console.error('Failed to load sample document:', error);
+    }
+  };
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
@@ -92,9 +103,20 @@ const FileUpload: React.FC<FileUploadProps> = ({
         <p className="text-muted-foreground mb-4">
           Drag and drop your PDF or image file here, or click to browse
         </p>
-        <Button variant="outline" className="bg-background/50">
-          Choose File
-        </Button>
+        <div className="flex justify-center gap-4">
+          <Button variant="outline" className="bg-background/50">
+            Choose File
+          </Button>
+          <Button
+            variant="ghost"
+            className="text-primary hover:text-primary/80 flex items-center gap-1"
+            onClick={loadSampleDocument}
+            disabled={isProcessing}
+          >
+            <FilePlus className="h-4 w-4" />
+            Try Sample
+          </Button>
+        </div>
         <p className="text-xs text-muted-foreground mt-3">
           Supports PDF, PNG, JPG, JPEG, GIF, BMP, WEBP (Max 10MB)
         </p>
