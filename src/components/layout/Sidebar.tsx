@@ -10,7 +10,7 @@ const Sidebar = () => {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
     { icon: Upload, label: 'Upload Document', path: '/upload' },
     { icon: History, label: 'Redaction History', path: '/history' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
+    
   ];
 
 
