@@ -29,10 +29,10 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
   const loadSampleDocument = async () => {
     try {
-      const response = await fetch('/sample.pdf');
+      const response = await fetch(`${window.location.origin}/sample.pdf`);
+      if (!response.ok) throw new Error('Failed to load sample document');
       const blob = await response.blob();
-      const file = new File([blob], 'sample.pdf', { type: 'application/pdf' });
-      onFileSelect(file);
+      
     } catch (error) {
       console.error('Failed to load sample document:', error);
     }

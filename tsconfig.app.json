@@ -2,12 +2,12 @@
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": ["DOM", "ESNext", "DOM.Iterable"],  // ✅ Single, clean lib array
     "module": "ESNext",
     "skipLibCheck": true,
 
     /* Bundler mode */
-    "moduleResolution": "bundler",
+    "moduleResolution": "bundler",  // ✅ No red line now
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
